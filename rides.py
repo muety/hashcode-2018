@@ -1,3 +1,5 @@
+import sys
+
 class Car():
     def __init__(self, id):
         self.id = id
@@ -71,7 +73,7 @@ def pick_ride(car, rides, t, bonus):
     return candidates[0] if len(candidates) > 0 else None
 
 if __name__ == '__main__':
-    rides, rows, cols, n_vehicles, bonus, t = parse_input('data/b_should_be_easy.in')
+    rides, rows, cols, n_vehicles, bonus, t = parse_input(sys.argv[1])
     cars = [Car(i + 1) for i in range(n_vehicles)]
 
     for c in cars:
