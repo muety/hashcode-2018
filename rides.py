@@ -2,6 +2,7 @@ class Car():
     def __init__(self, id):
         self.id = id
         self.position = (0,0)
+        self.rides = []
 
 class Ride():
     def __init__(self, id, start_x, start_y, dest_x, dest_y, earliest, latest):
@@ -21,11 +22,20 @@ class Ride():
 
 def parse_input(file):
     rides = []
-    with open(file) as f:
+    with open(file, 'r') as f:
         for i, line in enumerate(f):
             if i == 0: rows, cols, n_vehicles, n_rides, bonus, t = line.split(' ')
             rides.append(Ride(i, *(line.split(' '))))
-    return rides, rows, cols, n_vehicles, bonus, t
+    return rides, int(rows), int(cols), int(n_vehicles), int(bonus), int(t)
+
+def dump_rides(file, cars):
+    with open(file, 'w') as f:
+        for c in cars:
+            f.write('{} '.format(c.id))
+            for r in c.rides:
+                f.write('{} '.format(r.id))
+            f.write('\n')
+
 
 def get_distance(start, end):
     return abs(start[0] - end[0]) + abs(start[1] - end[1])
@@ -44,5 +54,6 @@ if __name__ == '__main__':
     for c in cars:
         r = pick_ride(c, rides)
         r.car = c
+        c.rides.append(r)
 
-    print(rides[0])
+    dump_rides('out.txt', cars)
