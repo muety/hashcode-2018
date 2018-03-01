@@ -60,14 +60,18 @@ def score_ride(car, ride, bonus):
     return drive_distance - pick_distance - wait_time + (bonus if on_time else 0)
 
 def pick_ride(car, rides, t, bonus):
-    candidates = [r for r in rides if r.car is None]
-    candidates = [r for r in candidates if count_steps(car, r) < (t - car.current_t)]
-    candidates = [r for r in candidates if car.current_t + count_steps(car, r) <= r.latest]
-    candidates = sorted(candidates, key=lambda r: score_ride(car, r, bonus), reverse=True)
+    count_lookup = {}
+    for r in rides:
+        count_lookup[r.id] = count_steps(car, r)
+
+    candidates = filter(lambda r: r.car is None, rides)
+    candidates = filter(lambda r: count_lookup[r.id] < (t - car.current_t), candidates)
+    candidates = filter(lambda r: car.current_t + count_lookup[r.id] <= r.latest, candidates)
+    candidates = sorted(list(candidates), key=lambda r: score_ride(car, r, bonus), reverse=True)
     return candidates[0] if len(candidates) > 0 else None
 
 if __name__ == '__main__':
-    rides, rows, cols, n_vehicles, bonus, t = parse_input('data/c_no_hurry.in')
+    rides, rows, cols, n_vehicles, bonus, t = parse_input('data/b_should_be_easy.in')
     cars = [Car(i + 1) for i in range(n_vehicles)]
 
     for c in cars:
