@@ -1,6 +1,5 @@
 import sys
-from tqdm import tqdm
-
+import numpy as np
 
 class Car():
     def __init__(self, id):
@@ -54,24 +53,30 @@ def count_steps(car, ride):
     new_t += get_distance((ride.start_x, ride.start_y), (ride.dest_x, ride.dest_y))
     return new_t - car.current_t
 
-def score_ride(car, ride, bonus):
+def get_global_average(rides):
+    x = [r.start_x for r in rides]
+    y = [r.start_y for r in rides]
+    return np.mean(x), np.mean(y)
+
+def score_ride(car, ride, bonus, medium):
     drive_distance = get_distance_for_ride(ride)
     pick_distance = get_distance(car.position, (ride.start_x, ride.start_y))
     wait_time = max(0, ride.earliest - (car.current_t + pick_distance))
     on_time = pick_distance + car.current_t <= ride.earliest
+    dest_medium_dist = get_distance((ride.dest_x, ride.dest_y), medium)
 
-    # TODO: weights
-    return drive_distance - pick_distance - wait_time + (bonus if on_time else 0)
+    return drive_distance - pick_distance - wait_time + (bonus if on_time else 0) - dest_medium_dist
 
 def pick_ride(car, rides, t, bonus):
     count_lookup = {}
     for r in rides:
         count_lookup[r.id] = count_steps(car, r)
+    medium = get_global_average(rides)
 
     candidates = filter(lambda r: r.car is None, rides)
     candidates = filter(lambda r: count_lookup[r.id] < (t - car.current_t), candidates)
     candidates = filter(lambda r: car.current_t + count_lookup[r.id] <= r.latest, candidates)
-    candidates = sorted(list(candidates), key=lambda r: score_ride(car, r, bonus), reverse=True)
+    candidates = sorted(list(candidates), key=lambda r: score_ride(car, r, bonus, medium), reverse=True)
     return candidates[0] if len(candidates) > 0 else None
 
 def get_next_idle(idles):
