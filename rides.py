@@ -74,23 +74,37 @@ def pick_ride(car, rides, t, bonus):
     candidates = sorted(list(candidates), key=lambda r: score_ride(car, r, bonus), reverse=True)
     return candidates[0] if len(candidates) > 0 else None
 
+def get_next_idle(idles):
+    return list(idles.keys())[0]
+
+# In-place
+def evaluate_car(car, rides, t, bonus, idles):
+    c = car
+    r = pick_ride(c, rides, t, bonus)
+    if r is None: return None
+    r.car = c
+    c.rides.append(r)
+    steps = count_steps(c, r)
+    c.current_t += steps
+    c.position = (r.dest_x, r.dest_y)
+    idles[(c, steps)] = True
+    return r
+
 if __name__ == '__main__':
     rides, rows, cols, n_vehicles, bonus, t = parse_input(sys.argv[1])
     cars = [Car(i + 1) for i in range(n_vehicles)]
-    pbar = tqdm(total=n_vehicles)
+
+    idles = {}
 
     for c in cars:
-        r = pick_ride(c, rides, t, bonus)
-        can_pick = r is not None
-        while can_pick:
-            r = pick_ride(c, rides, t, bonus)
-            if r is None: break
+        evaluate_car(c, rides, t, bonus, idles)
 
-            r.car = c
-            c.rides.append(r)
-            c.current_t += count_steps(c, r)
-            c.position = (r.dest_x, r.dest_y)
-        pbar.update(1)
+    c = 0
+    while len(idles) > 0:
+        car, idle_t = get_next_idle(idles)
+        del idles[(car, idle_t)]
+        evaluate_car(car, rides, t, bonus, idles)
+        if c % 10 == 0: print('{} rides in queue'.format(len(idles)))
+        c += 1
 
-    dump_rides('out.txt', cars)
-    pbar.close()
+    dump_rides('out_b.txt', cars)
