@@ -1,4 +1,6 @@
 import sys
+from tqdm import tqdm
+
 
 class Car():
     def __init__(self, id):
@@ -75,6 +77,7 @@ def pick_ride(car, rides, t, bonus):
 if __name__ == '__main__':
     rides, rows, cols, n_vehicles, bonus, t = parse_input(sys.argv[1])
     cars = [Car(i + 1) for i in range(n_vehicles)]
+    pbar = tqdm(total=n_vehicles)
 
     for c in cars:
         r = pick_ride(c, rides, t, bonus)
@@ -87,5 +90,7 @@ if __name__ == '__main__':
             c.rides.append(r)
             c.current_t += count_steps(c, r)
             c.position = (r.dest_x, r.dest_y)
+        pbar.update(1)
 
     dump_rides('out.txt', cars)
+    pbar.close()
