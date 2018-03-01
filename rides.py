@@ -75,7 +75,7 @@ def pick_ride(car, rides, t, bonus):
     return candidates[0] if len(candidates) > 0 else None
 
 def get_next_idle(idles):
-    return list(idles.keys())[0]
+    return sorted(idles, key=lambda i: i[1])[0]
 
 # In-place
 def evaluate_car(car, rides, t, bonus, idles):
@@ -87,14 +87,14 @@ def evaluate_car(car, rides, t, bonus, idles):
     steps = count_steps(c, r)
     c.current_t += steps
     c.position = (r.dest_x, r.dest_y)
-    idles[(c, steps)] = True
+    idles.append((c, steps))
     return r
 
 if __name__ == '__main__':
     rides, rows, cols, n_vehicles, bonus, t = parse_input(sys.argv[1])
     cars = [Car(i + 1) for i in range(n_vehicles)]
 
-    idles = {}
+    idles = []
 
     for c in cars:
         evaluate_car(c, rides, t, bonus, idles)
@@ -102,9 +102,9 @@ if __name__ == '__main__':
     c = 0
     while len(idles) > 0:
         car, idle_t = get_next_idle(idles)
-        del idles[(car, idle_t)]
+        idles.remove((car, idle_t))
         evaluate_car(car, rides, t, bonus, idles)
         if c % 10 == 0: print('{} rides in queue'.format(len(idles)))
         c += 1
 
-    dump_rides('out_b.txt', cars)
+    dump_rides(sys.argv[2] if len(sys.argv) > 2 else 'out.txt', cars)
