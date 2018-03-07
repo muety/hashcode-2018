@@ -79,9 +79,6 @@ def pick_ride(car, rides, t, bonus):
     candidates = sorted(list(candidates), key=lambda r: score_ride(car, r, bonus, medium), reverse=True)
     return candidates[0] if len(candidates) > 0 else None
 
-def get_next_idle(idles):
-    return sorted(idles, key=lambda i: i[1])[0]
-
 # In-place
 def evaluate_car(car, rides, t, bonus, idles):
     c = car
@@ -106,8 +103,9 @@ if __name__ == '__main__':
 
     c = 0
     while len(idles) > 0:
-        car, idle_t = get_next_idle(idles)
-        idles.remove((car, idle_t))
+        idles = sorted(idles, key=lambda i: i[1])
+        car, idle_t = idles[0]
+        idles = idles[1:]
         evaluate_car(car, rides, t, bonus, idles)
         if c % 10 == 0: print('{} rides in queue'.format(len(idles)))
         c += 1
